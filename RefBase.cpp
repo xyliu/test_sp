@@ -16,30 +16,22 @@
 
 #define LOG_TAG "RefBase"
 
-#include <utils/RefBase.h>
-
-#include <utils/Atomic.h>
-#include <utils/CallStack.h>
-#include <utils/Log.h>
-#include <utils/threads.h>
-#include <utils/TextOutput.h>
-
+#include "log.h"
+#include "RefBase.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <typeinfo>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
 
 // compile with refcounting debugging enabled
-#define DEBUG_REFS                      0
+#define DEBUG_REFS                     	0
 #define DEBUG_REFS_FATAL_SANITY_CHECKS  0
 #define DEBUG_REFS_ENABLED_BY_DEFAULT   1
-#define DEBUG_REFS_CALLSTACK_ENABLED    1
+#define DEBUG_REFS_CALLSTACK_ENABLED    0
 
 // log all reference counting operations
-#define PRINT_REFS                      0
+#define PRINT_REFS                      1
 
 // ---------------------------------------------------------------------------
 
@@ -88,11 +80,13 @@ public:
         , mTrackEnabled(!!DEBUG_REFS_ENABLED_BY_DEFAULT)
         , mRetain(false)
     {
+	    ALOG("[constructor] weakref_impl(RefBase:%p)\n", base);
     }
     
     ~weakref_impl()
     {
         bool dumpStack = false;
+	ALOG("[destructor] ~weakref_impl\n");
         if (!mRetain && mStrongRefs != NULL) {
             dumpStack = true;
 #if DEBUG_REFS_FATAL_SANITY_CHECKS
@@ -128,12 +122,15 @@ public:
                 refs = refs->next;
             }
         }
+
+#if DEBUG_REFS_CALLSTACK_ENABLED
         if (dumpStack) {
             ALOGE("above errors at:");
             CallStack stack;
             stack.update();
             stack.dump();
         }
+#endif
     }
 
     void addStrongRef(const void* id) {
@@ -183,31 +180,11 @@ public:
 
     void printRefs() const
     {
-        String8 text;
 
-        {
-            Mutex::Autolock _l(mMutex);
-            char buf[128];
-            sprintf(buf, "Strong references on RefBase %p (weakref_type %p):\n", mBase, this);
-            text.append(buf);
-            printRefsLocked(&text, mStrongRefs);
-            sprintf(buf, "Weak references on RefBase %p (weakref_type %p):\n", mBase, this);
-            text.append(buf);
-            printRefsLocked(&text, mWeakRefs);
-        }
-
-        {
-            char name[100];
-            snprintf(name, 100, "/data/%p.stack", this);
-            int rc = open(name, O_RDWR | O_CREAT | O_APPEND);
-            if (rc >= 0) {
-                write(rc, text.string(), text.length());
-                close(rc);
-                ALOGD("STACK TRACE for %p saved in %s", this, name);
-            }
-            else ALOGE("FAILED TO PRINT STACK TRACE for %p in %s: %s", this,
-                      name, strerror(errno));
-        }
+	    printf("Strong references on RefBase %p (weakref_type %p):\n", mBase, this);
+	    printRefsLocked(mStrongRefs);
+	    printf("Weak references on RefBase %p (weakref_type %p):\n", mBase, this);
+	    printRefsLocked(mWeakRefs);
     }
 
 private:
@@ -224,7 +201,6 @@ private:
     void addRef(ref_entry** refs, const void* id, int32_t mRef)
     {
         if (mTrackEnabled) {
-            AutoMutex _l(mMutex);
 
             ref_entry* ref = new ref_entry;
             // Reference count at the time of the snapshot, but before the
@@ -243,7 +219,6 @@ private:
     void removeRef(ref_entry** refs, const void* id)
     {
         if (mTrackEnabled) {
-            AutoMutex _l(mMutex);
             
             ref_entry* const head = *refs;
             ref_entry* ref = head;
@@ -274,16 +249,18 @@ private:
                 ref = ref->next;
             }
 
+#if DEBUG_REFS_CALLSTACK_ENABLED
+            ref->stack.update(2);
             CallStack stack;
             stack.update();
             stack.dump();
+#endif
         }
     }
 
     void renameRefsId(ref_entry* r, const void* old_id, const void* new_id)
     {
         if (mTrackEnabled) {
-            AutoMutex _l(mMutex);
             ref_entry* ref = r;
             while (ref != NULL) {
                 if (ref->id == old_id) {
@@ -294,24 +271,16 @@ private:
         }
     }
 
-    void printRefsLocked(String8* out, const ref_entry* refs) const
+    void printRefsLocked(const ref_entry* refs) const
     {
-        char buf[128];
         while (refs) {
             char inc = refs->ref >= 0 ? '+' : '-';
-            sprintf(buf, "\t%c ID %p (ref %d):\n", 
-                    inc, refs->id, refs->ref);
-            out->append(buf);
-#if DEBUG_REFS_CALLSTACK_ENABLED
-            out->append(refs->stack.toString("\t\t"));
-#else
-            out->append("\t\t(call stacks disabled)");
-#endif
+            printf("\t%c ID %p (ref %d):\n", inc, refs->id, refs->ref);
+            printf("\t\t(call stacks disabled)");
             refs = refs->next;
         }
     }
 
-    mutable Mutex mMutex;
     ref_entry* mStrongRefs;
     ref_entry* mWeakRefs;
 
@@ -578,10 +547,12 @@ void RefBase::extendObjectLifetime(int32_t mode)
 
 void RefBase::onFirstRef()
 {
+    ALOGD("RefBase::onFirstRef()\n");
 }
 
 void RefBase::onLastStrongRef(const void* /*id*/)
 {
+    ALOGD("RefBase::onLastStrongRef()\n");
 }
 
 bool RefBase::onIncStrongAttempted(uint32_t flags, const void* id)
@@ -591,6 +562,7 @@ bool RefBase::onIncStrongAttempted(uint32_t flags, const void* id)
 
 void RefBase::onLastWeakRef(const void* /*id*/)
 {
+    ALOGD("RefBase::onLastWeakRef()\n");
 }
 
 // ---------------------------------------------------------------------------
@@ -612,17 +584,6 @@ void RefBase::moveReferences(void* dst, void const* src, size_t n,
 
 // ---------------------------------------------------------------------------
 
-TextOutput& printStrongPointer(TextOutput& to, const void* val)
-{
-    to << "sp<>(" << val << ")";
-    return to;
-}
-
-TextOutput& printWeakPointer(TextOutput& to, const void* val)
-{
-    to << "wp<>(" << val << ")";
-    return to;
-}
 
 
 }; // namespace android

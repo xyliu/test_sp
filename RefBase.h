@@ -17,21 +17,17 @@
 #ifndef ANDROID_REF_BASE_H
 #define ANDROID_REF_BASE_H
 
-#include <cutils/atomic.h>
 
 #include <stdint.h>
-#include <sys/types.h>
 #include <stdlib.h>
 #include <string.h>
 
-#include <utils/StrongPointer.h>
-#include <utils/TypeHelpers.h>
+#include "Atomic-x86.h"
+#include "StrongPointer.h"
 
 // ---------------------------------------------------------------------------
 namespace android {
 
-class TextOutput;
-TextOutput& printWeakPointer(TextOutput& to, const void* val);
 
 // ---------------------------------------------------------------------------
 
@@ -284,8 +280,7 @@ private:
     weakref_type*   m_refs;
 };
 
-template <typename T>
-TextOutput& operator<<(TextOutput& to, const wp<T>& val);
+
 
 #undef COMPARE_WEAK
 
@@ -445,11 +440,6 @@ void wp<T>::clear()
     }
 }
 
-template <typename T>
-inline TextOutput& operator<<(TextOutput& to, const wp<T>& val)
-{
-    return printWeakPointer(to, val.unsafe_get());
-}
 
 // ---------------------------------------------------------------------------
 
