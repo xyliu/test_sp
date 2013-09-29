@@ -20,7 +20,7 @@
 
 #include <stdint.h>
 #include <stdlib.h>
-
+#include <stdio.h>
 // ---------------------------------------------------------------------------
 namespace android {
 
@@ -113,6 +113,7 @@ template<typename T>
 sp<T>::sp(T* other)
 : m_ptr(other)
   {
+	printf ("Construction sp<T>::sp()\n");
     if (other) other->incStrong(this);
   }
 
@@ -120,6 +121,7 @@ template<typename T>
 sp<T>::sp(const sp<T>& other)
 : m_ptr(other.m_ptr)
   {
+	printf ("Construction sp<T>::sp()\n");
     if (m_ptr) m_ptr->incStrong(this);
   }
 
@@ -139,6 +141,7 @@ sp<T>::sp(const sp<U>& other)
 template<typename T>
 sp<T>::~sp()
 {
+	printf("Destruction sp<T>::~sp()\n");
     if (m_ptr) m_ptr->decStrong(this);
 }
 
@@ -154,6 +157,7 @@ sp<T>& sp<T>::operator = (const sp<T>& other) {
 template<typename T>
 sp<T>& sp<T>::operator = (T* other)
 {
+	printf ("Construction sp<T>::sp()\n");
     if (other) other->incStrong(this);
     if (m_ptr) m_ptr->decStrong(this);
     m_ptr = other;

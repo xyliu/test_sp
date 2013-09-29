@@ -21,7 +21,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include <stdio.h>
 #include "Atomic-x86.h"
 #include "StrongPointer.h"
 
@@ -339,6 +339,7 @@ wp<T>::wp(const sp<U>& other)
 template<typename T>
 wp<T>::~wp()
 {
+	printf("Destruction: ~wp() %p\n", this);
     if (m_ptr) m_refs->decWeak(this);
 }
 
