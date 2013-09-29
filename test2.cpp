@@ -10,10 +10,10 @@
 
 namespace android{
 
-	class Bigclass : public RefBase 
-	{ 
+	class Bigclass : public RefBase
+	{
 		public:
-			Bigclass(char *name){
+			Bigclass(const char *name){
 				strcpy(mName, name);
 				ALOGD(">>>Construct: %s\n", mName);
 			}
@@ -26,8 +26,13 @@ namespace android{
 				spB = b;
 			}   	
 
+			void setWeakRefs(sp<Bigclass> b) {
+				wpB = b;
+			}
+
 		private:	
 			sp<Bigclass> spB;
+			wp<Bigclass> wpB;
 			char mName[64];	
 	};
 
@@ -43,11 +48,21 @@ void testStrongCrossRef(){
 	B->setStrongRefs(A);
 }
 
-int main(){
-	ALOGD("* Start testStrongClasses..\n");  
-	testStrongCrossRef();
-	ALOGD("* testStrongClasses Should be destructed!!\n");
+void testWeakCrossRef() {
+	sp<Bigclass> A = new Bigclass("testWeakClassA");
+	sp<Bigclass> B = new Bigclass("testWeakClassB");
 
+	A->setStrongRefs(B);
+	B->setWeakRefs(A);
+}
+int main(){
+	ALOGD("* Start testStrongClasses..\n");
+	testStrongCrossRef();
+	ALOGD("* testStrongClasses Should be destructed!!\n\n");
+
+	ALOGD("* Start testWeakClasses..\n");
+	testWeakCrossRef();
+	ALOGD("* testWeakClasses Should be destructed!!\n\n");
 	return 0;
 }
 
