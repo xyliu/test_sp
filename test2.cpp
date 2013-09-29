@@ -55,6 +55,15 @@ void testWeakCrossRef() {
 	A->setStrongRefs(B);
 	B->setWeakRefs(A);
 }
+
+void testCrossRef() {
+	sp<Bigclass> A = new Bigclass("testNormalClassA");
+	sp<Bigclass> B = new Bigclass("testNormalClassB");
+
+	A->setWeakRefs(B);
+	B->setWeakRefs(A);
+}
+
 int main(){
 	ALOGD("* Start testStrongClasses..\n");
 	testStrongCrossRef();
@@ -63,6 +72,11 @@ int main(){
 	ALOGD("* Start testWeakClasses..\n");
 	testWeakCrossRef();
 	ALOGD("* testWeakClasses Should be destructed!!\n\n");
+
+	ALOGD("* Start testNormalClasses..\n");
+	testCrossRef();
+	ALOGD("* testNormalClasses should be destructed!!\n\n");
+
 	return 0;
 }
 
