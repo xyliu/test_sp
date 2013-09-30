@@ -368,7 +368,7 @@ void RefBase::weakref_type::incWeak(const void* id)
     weakref_impl* const impl = static_cast<weakref_impl*>(this);
     impl->addWeakRef(id);
     const int32_t c = android_atomic_inc(&impl->mWeak);
-    printf("[I] c is %d\n", c);
+    printf("[IncWeak()] mWeak's c is %d\n", c);
     ALOG_ASSERT(c >= 0, "incWeak called on %p after last weak ref", this);
 }
 
@@ -378,6 +378,7 @@ void RefBase::weakref_type::decWeak(const void* id)
     weakref_impl* const impl = static_cast<weakref_impl*>(this);
     impl->removeWeakRef(id);
     const int32_t c = android_atomic_dec(&impl->mWeak);
+    printf("[DecWeak()] mWeak's c is %d\n", c);
     ALOG_ASSERT(c >= 1, "decWeak called on %p too many times", this);
     if (c != 1) return;
 
