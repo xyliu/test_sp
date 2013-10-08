@@ -141,8 +141,9 @@ sp<T>::sp(const sp<U>& other)
 template<typename T>
 sp<T>::~sp()
 {
-	printf("Destruction sp<T>::~sp()\n");
+    printf("* Enter sp<T>::~sp()\n");
     if (m_ptr) m_ptr->decStrong(this);
+    printf("* Leave sp<T>::~sp()\n");
 }
 
 template<typename T>

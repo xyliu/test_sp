@@ -523,6 +523,7 @@ RefBase::RefBase()
 
 RefBase::~RefBase()
 {
+    printf("* Enter ~RefBase()\n");
     if (mRefs->mStrong == INITIAL_STRONG_VALUE) {
         // we never acquired a strong (and/or weak) reference on this object.
         delete mRefs;
@@ -540,6 +541,8 @@ RefBase::~RefBase()
     }
     // for debugging purposes, clear this.
     const_cast<weakref_impl*&>(mRefs) = NULL;
+
+    printf("* Leave ~RefBase()\n");
 }
 
 void RefBase::extendObjectLifetime(int32_t mode)

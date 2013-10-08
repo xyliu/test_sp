@@ -339,8 +339,9 @@ wp<T>::wp(const sp<U>& other)
 template<typename T>
 wp<T>::~wp()
 {
-	printf("Destruction: ~wp() %p\n", this);
+    printf("* Enter ~wp() %p\n", this);
     if (m_ptr) m_refs->decWeak(this);
+    printf("* Leave ~wp() %p\n", this);
 }
 
 template<typename T>
