@@ -113,16 +113,18 @@ template<typename T>
 sp<T>::sp(T* other)
 : m_ptr(other)
   {
-	printf ("Construction sp<T>::sp()\n");
+	printf (" ==> Enter sp<T>::sp() (%p) from other(%p)\n", this, &other);
     if (other) other->incStrong(this);
+	printf (" <== Leave sp<T>::sp() (%p) from other(%p)\n", this, &other);
   }
 
 template<typename T>
 sp<T>::sp(const sp<T>& other)
 : m_ptr(other.m_ptr)
   {
-	printf ("Construction sp<T>::sp()\n");
+	printf (" ==> enter sp<T>::sp(&other=%p) (%p)\n", this, &other);
     if (m_ptr) m_ptr->incStrong(this);
+	printf (" <== Leave sp<T>::sp(&other=%p) (%p)\n", this, &other);
   }
 
 template<typename T> template<typename U>
@@ -141,9 +143,12 @@ sp<T>::sp(const sp<U>& other)
 template<typename T>
 sp<T>::~sp()
 {
-    printf("* Enter sp<T>::~sp()\n");
-    if (m_ptr) m_ptr->decStrong(this);
-    printf("* Leave sp<T>::~sp()\n");
+    printf(" ==> Enter sp<T>::~sp() (%p) \n", this);
+    if (m_ptr) {
+		printf("  decStrong %p in ~sp()\n", m_ptr);
+		m_ptr->decStrong(this);
+	}
+    printf(" <== Leave sp<T>::~sp()\n");
 }
 
 template<typename T>
@@ -158,11 +163,12 @@ sp<T>& sp<T>::operator = (const sp<T>& other) {
 template<typename T>
 sp<T>& sp<T>::operator = (T* other)
 {
-	printf ("Construction sp<T>::sp()\n");
-    if (other) other->incStrong(this);
-    if (m_ptr) m_ptr->decStrong(this);
-    m_ptr = other;
-    return *this;
+	printf (" => enter sp<T>::operator = %p\n", this);
+	if (other) other->incStrong(this);
+	if (m_ptr) m_ptr->decStrong(this);
+	m_ptr = other;
+	printf (" <= leave sp<T>::operator = %p\n", this);
+	return *this;
 }
 
 template<typename T> template<typename U>

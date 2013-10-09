@@ -1,4 +1,6 @@
 all:
+	g++ -g3 -O0 RefBase.cpp test2.cpp -o test2
+testsp:
 	g++ -g3 -O0 RefBase.cpp main.cpp -o testsp
 clean:
 	rm -f testsp test2 test3 *.o

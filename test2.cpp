@@ -15,11 +15,11 @@ namespace android{
 		public:
 			Bigclass(const char *name){
 				strcpy(mName, name);
-				ALOGD(">>>Construct: %s\n", mName);
+				ALOGD(">>>Construct:(%p) %s\n", this,  mName);
 			}
 
 			~Bigclass(){
-				ALOGD("<<<destruct: %s\n", mName);
+				ALOGD("<<<destruct: (%p) %s\n", this, mName);
 			}
 
 			void setStrongRefs(sp<Bigclass> b){
@@ -52,8 +52,12 @@ void testWeakCrossRef() {
 	sp<Bigclass> A = new Bigclass("testWeakClassA");
 	sp<Bigclass> B = new Bigclass("testWeakClassB");
 
+	printf("A: *[%p] B: *[%p]\n", &A, &B);
+	printf("-------\n");
 	A->setStrongRefs(B);
+	printf("-------\n");
 	B->setWeakRefs(A);
+	printf("-------\n");
 }
 
 void testCrossRef() {
