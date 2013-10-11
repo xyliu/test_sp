@@ -14,6 +14,7 @@ int main()
 
 	wp<Apple> wp1(pA);
 	sp<Apple> sp1 = wp1.promote();
+	sp1->foo();
 
 	/*
 	printf(" 2. \n");

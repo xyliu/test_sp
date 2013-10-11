@@ -325,6 +325,7 @@ void RefBase::decStrong(const void* id) const
     if (c == 1) {
         refs->mBase->onLastStrongRef(id);
         if ((refs->mFlags&OBJECT_LIFETIME_MASK) == OBJECT_LIFETIME_STRONG) {
+			ALOGD("   [[RefBase::decStrong(): delete this(%p)\n", this);
             delete this;
         }
     }

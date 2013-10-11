@@ -42,10 +42,20 @@ using namespace android;
 
 void testStrongCrossRef(){
 	sp<Bigclass> A = new Bigclass("testStrongClassA");
+
+	printf("-------\n");
+
 	sp<Bigclass> B = new Bigclass("testStrongClassB");
 
+	printf("-------\n");
+
 	A->setStrongRefs(B);
+
+	printf("-------\n");
+
 	B->setStrongRefs(A);
+
+	printf("-------\n");
 }
 
 void testWeakCrossRef() {
@@ -68,9 +78,34 @@ void testCrossRef() {
 	B->setWeakRefs(A);
 }
 
+void testW() {
+	Bigclass *p = new Bigclass("PPPP");
+	wp<Bigclass> A;
+	{
+
+	   printf("in\n");
+	   wp<Bigclass> B(p);
+	   wp<Bigclass> C(p);
+	   A = B;
+	   printf("out\n");
+	}
+	wp<Bigclass> D = A;
+}
+
+void testS() {
+	Bigclass *p = new Bigclass("QQQQ");
+	{
+	   sp<Bigclass> A(p);
+	   sp<Bigclass> B(p);
+	   sp<Bigclass> C(p);
+	   printf("out\n");
+	}
+	sp<Bigclass> D(p);
+}
+
 int main(){
 	ALOGD("* Start testStrongClasses..\n");
-	testStrongCrossRef();
+//	testStrongCrossRef();
 	ALOGD("* testStrongClasses Should be destructed!!\n\n");
 
 	ALOGD("* Start testWeakClasses..\n");
@@ -78,9 +113,12 @@ int main(){
 	ALOGD("* testWeakClasses Should be destructed!!\n\n");
 
 	ALOGD("* Start testNormalClasses..\n");
-	testCrossRef();
+//	testCrossRef();
 	ALOGD("* testNormalClasses should be destructed!!\n\n");
 
+	// printf("segment fault \n";
+	//testW();
+	//testS();
 	return 0;
 }
 
